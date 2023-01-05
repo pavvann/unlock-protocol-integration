@@ -1,0 +1,8 @@
+{
+  "name": "unlock-protocol-integration",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/pavvann/unlock-protocol-integration.git",
+  "author": "Pawan <pawanbajaj2012@gmail.com>",
+  "license": "MIT"
+}
