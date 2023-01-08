@@ -18,6 +18,7 @@
     "@nomiclabs/hardhat-etherscan": "^3.0.0",
     "@typechain/ethers-v5": "^10.1.0",
     "@typechain/hardhat": "^6.1.2",
+    "@unlock-protocol/unlock-js": "^0.32.17",
     "chai": "^4.2.0",
     "dotenv": "^16.0.3",
     "ethers": "^5.4.7",
