@@ -32,6 +32,8 @@
   font-size: 1.2rem;
 }
 
+
+
 .button {
   border-radius: 4px;
   background-color: blue;
@@ -41,6 +43,19 @@
   padding: 20px;
   margin-left: 40px;
   width: 200px;
+  cursor: pointer;
+  margin-bottom: 2%;
+}
+
+.button1 {
+  border-radius: 4px;
+  background-color: blue;
+  border: none;
+  color: #ffffff;
+  font-size: 15px;
+  padding: 10px;
+  margin-left: 40px;
+  width: 150px;
   cursor: pointer;
   margin-bottom: 2%;
 }
