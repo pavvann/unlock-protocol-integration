@@ -17,7 +17,6 @@ export default function create() {
     const [walletConnected, setWalletConnected] = useState(false);
     const createLock = async () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-        // const provider = new ethers.providers.JsonRpcProvider(networks[5].provider);
         if (provider.getNetwork() != 5) {
             window.alert("Change network to Goerli");
         }
@@ -45,7 +44,6 @@ export default function create() {
     }
     const connectWallet = async () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-        // const provider = new ethers.providers.JsonRpcProvider(networks[5].provider);
         await provider.send('eth_requestAccounts', []);
         setWalletConnected(true);
     }

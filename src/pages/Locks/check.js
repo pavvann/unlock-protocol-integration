@@ -13,6 +13,8 @@ export default function check() {
             provider: "https://rpc.unlock-protocol.com/5",
         },
     };
+
+    // enter lock address here
     const lockAddress = "enter lock address";
     const [lockManager, setIsLockManager] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -47,17 +49,12 @@ export default function check() {
     const checkLockName = async () => {
         setLoading(true);
         const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-        // const provider = new ethers.providers.JsonRpcProvider(networks[5].provider);
         let accounts = await provider.send("eth_requestAccounts", []);
         let account = accounts[0];
         const signer = provider.getSigner();
 
-        // create unlock-protocol lock
         const web3Service = new Web3Service(networks)
 
-        // Connect to a provider with a wallet
-        // await walletService.connect(provider, signer);
-        // This only resolves when the transaction has been mined, but the callback returns the hash immediately
         const details = await web3Service.getLock(lockAddress, 5);
         console.log("Lock = " + details)
         setLockName(details.name);
@@ -67,20 +64,11 @@ export default function check() {
     const checkBalance = async () => {
         setLoading(true);
         const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-        // const provider = new ethers.providers.JsonRpcProvider(networks[5].provider);
         let accounts = await provider.send("eth_requestAccounts", []);
         let account = accounts[0];
-        // if (provider.getNetwork() != 5) {
-        //     window.alert("Change network to Goerli");
-        // }
-        const signer = provider.getSigner();
 
-        // create unlock-protocol lock
         const web3Service = new Web3Service(networks)
 
-        // Connect to a provider with a wallet
-        // await walletService.connect(provider, signer);
-        // This only resolves when the transaction has been mined, but the callback returns the hash immediately
         const balance = await web3Service.getAddressBalance(lockAddress, 5);
         console.log("balance = " + balance)
         setBalance(balance);
@@ -89,12 +77,8 @@ export default function check() {
 
     const withdraw = async () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-        // const provider = new ethers.providers.JsonRpcProvider(networks[5].provider);
-        // if (provider.getNetwork() != 5) {
-        //     window.alert("Change network to Goerli");
-        // }
+
         const signer = provider.getSigner();
-        // create unlock-protocol lock
         const walletService = new WalletService(networks);
 
         // Connect to a provider with a wallet
@@ -262,7 +246,8 @@ export default function check() {
             return (
                 <div>
                     <h1 className={styles.description}>You are not a member. Click below to get your Membership</h1> <br></br>
-                    <Link className={styles.button} href="lock checkout url">Become a Member</Link>
+                    {/* Enter checkout url here */}
+                    <Link className={styles.button} href="enter checkout url">Become a Member</Link>
                 </div>
             )
         }
