@@ -36,7 +36,7 @@ export default function Home() {
       return (
         <div>
         <Link className={styles.button} href="/Locks/create">Create a Lock</Link>
-        <Link className={styles.button} href="/Locks/check">Check out Locks</Link>
+        <Link className={styles.button} href="/Locks/check">Check out Lock</Link>
         </div>
       );
     }
