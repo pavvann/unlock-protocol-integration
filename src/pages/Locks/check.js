@@ -12,10 +12,15 @@ export default function check() {
             unlockAddress: "0x627118a4fB747016911e5cDA82e2E77C531e8206", // Smart contracts docs include all addresses on all networks
             provider: "https://rpc.unlock-protocol.com/5",
         },
+        80001: {
+            unlockAddress: '0x1FF7e338d5E582138C46044dc238543Ce555C963',
+            provider: 'https://rpc.unlock-protocol.com/80001',
+            chainId: '0x13881',
+        },
     };
 
     // enter lock address here
-    const lockAddress = "enter lock address";
+    const lockAddress = "0xa8Ff453370f1B4550E9Bd8275cCEDDE9D80e313E";
     const [lockManager, setIsLockManager] = useState(false);
     const [loading, setLoading] = useState(false);
     const [member, setMember] = useState(false);
@@ -36,10 +41,10 @@ export default function check() {
 
         const web3Service = new Web3Service(networks)
 
-        const lock = await web3Service.isLockManager(lockAddress, account, 5);
+        const lock = await web3Service.isLockManager(lockAddress, account, 80001);
         console.log("manager = " + lock)
         setIsLockManager(lock);
-        let keyStatus = await web3Service.getHasValidKey(lockAddress, account, 5);
+        let keyStatus = await web3Service.getHasValidKey(lockAddress, account, 80001);
         console.log("key = " + keyStatus)
         setMember(keyStatus);
         setLoading(false);
@@ -48,18 +53,19 @@ export default function check() {
 
     const checkLockName = async () => {
         setLoading(true);
-        const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+        const provider = new ethers.providers.Web3Provider(window.ethereum, "maticmum");
         let accounts = await provider.send("eth_requestAccounts", []);
         let account = accounts[0];
         const signer = provider.getSigner();
 
         const web3Service = new Web3Service(networks)
 
-        const details = await web3Service.getLock(lockAddress, 5);
+        const details = await web3Service.getLock(lockAddress, 80001);
         console.log("Lock = " + details)
         setLockName(details.name);
         setLoading(false);
     }
+    
 
     const checkBalance = async () => {
         setLoading(true);
@@ -69,7 +75,7 @@ export default function check() {
 
         const web3Service = new Web3Service(networks)
 
-        const balance = await web3Service.getAddressBalance(lockAddress, 5);
+        const balance = await web3Service.getAddressBalance(lockAddress, 80001);
         console.log("balance = " + balance)
         setBalance(balance);
         setLoading(false);
@@ -88,6 +94,7 @@ export default function check() {
             {
                 lockAddress: lockAddress,
                 amount: withdrawAmount,
+                erc20Address: "0xE097d6B3100777DC31B34dC2c58fB524C2e76921",
             },
             {}, // transaction options
             (error, hash) => {
@@ -117,17 +124,36 @@ export default function check() {
         );
         console.log(changeName)
     }
-
-    const giveKey = async () => {
+    const purchase = async () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
         const signer = provider.getSigner();
         const walletService = new WalletService(networks);
 
         await walletService.connect(provider, signer);
+        const changeName = await walletService.purchaseKey(
+            {
+                lockAddress: lockAddress,
+            },
+            {}, // transaction options
+            (error, hash) => {
+                // This is the hash of the transaction!
+                console.log({ hash });
+            }
+        );
+        console.log(changeName)
+    }
+
+    const giveKey = async () => {
+        const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+        const signer = provider.getSigner();
+        const walletService = new WalletService(networks);
+        const time = 4294967295
+        await walletService.connect(provider, signer);
         const giveKey_ = await walletService.grantKey(
             {
                 lockAddress: lockAddress,
                 recipient: keyRecipient,
+                expiration: time,
             },
             {}, // transaction options
             (error, hash) => {
@@ -247,7 +273,7 @@ export default function check() {
                 <div>
                     <h1 className={styles.description}>You are not a member. Click below to get your Membership</h1> <br></br>
                     {/* Enter checkout url here */}
-                    <Link className={styles.button} href="enter checkout url">Become a Member</Link>
+                    <button className={styles.button} onClick={purchase}>Become a Member</button>
                 </div>
             )
         }
