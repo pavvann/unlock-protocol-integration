@@ -4,6 +4,8 @@ import styles from "../../styles/Home.module.css";
 import { WalletService, Web3Service } from '@unlock-protocol/unlock-js';
 import { ethers } from 'ethers';
 import Link from 'next/link';
+import { BigNumber } from "ethers";
+// import Biconomy from "@biconomy/mexa";
 
 
 export default function check() {
@@ -20,7 +22,7 @@ export default function check() {
     };
 
     // enter lock address here
-    const lockAddress = "0xa8Ff453370f1B4550E9Bd8275cCEDDE9D80e313E";
+    const lockAddress = "0x16cc1193c1e128558a02c4533901b1c0eef7b021";
     const [lockManager, setIsLockManager] = useState(false);
     const [loading, setLoading] = useState(false);
     const [member, setMember] = useState(false);
@@ -41,10 +43,10 @@ export default function check() {
 
         const web3Service = new Web3Service(networks)
 
-        const lock = await web3Service.isLockManager(lockAddress, account, 80001);
+        const lock = await web3Service.isLockManager(lockAddress, account, 5);
         console.log("manager = " + lock)
         setIsLockManager(lock);
-        let keyStatus = await web3Service.getHasValidKey(lockAddress, account, 80001);
+        let keyStatus = await web3Service.getHasValidKey(lockAddress, account, 5);
         console.log("key = " + keyStatus)
         setMember(keyStatus);
         setLoading(false);
@@ -60,24 +62,54 @@ export default function check() {
 
         const web3Service = new Web3Service(networks)
 
-        const details = await web3Service.getLock(lockAddress, 80001);
+        const details = await web3Service.getLock(lockAddress, 5);
         console.log("Lock = " + details)
         setLockName(details.name);
         setLoading(false);
     }
-    
+
 
     const checkBalance = async () => {
         setLoading(true);
         const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
         let accounts = await provider.send("eth_requestAccounts", []);
         let account = accounts[0];
-
         const web3Service = new Web3Service(networks)
+        const lockContract = await web3Service.getLockContract(lockAddress, provider)
+        console.log(Number(await lockContract.balanceOf("0xadba2f601378c3f3326f1c0d747d7e1e0a160724")))
+        console.log(lockContract)
 
-        const balance = await web3Service.getAddressBalance(lockAddress, 80001);
-        console.log("balance = " + balance)
-        setBalance(balance);
+        // const balance = await web3Service.getAddressBalance(lockAddress, 5);
+        // console.log("balance = " + balance)
+        // setBalance(balance);
+        // setLoading(false);
+    }
+    const burn = async () => {
+        setLoading(true);
+        // const biconomy = new Biconomy(window.ethereum, { apiKey: "gUv-7Xh-M.aa270a76-a1aa-4e79-bab5-8d857161c561", debug: true });
+        const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+        // const provider = new ethers.providers.Web3Provider(biconomy)
+        let accounts = await provider.send("eth_requestAccounts", []);
+
+        const signer = provider.getSigner();
+        let account = accounts[0];
+        const web3Service = new Web3Service(networks)
+        const lockContract = await web3Service.getLockContract(lockAddress, signer)
+        // const tx = {
+        //     to: lockAddress,
+        //     data: contract.interface.encodeFunctionData('burn', [11]),
+
+        // }
+        // Sign and send the transaction using Biconomy
+        // const metaTx = await biconomy.signTransaction(tx);
+        // const txResponse = await signer.sendTransaction(metaTx);
+
+        // Wait for the transaction to be mined
+        // console.log(await txResponse.wait());
+
+        console.log(Number(await lockContract.burn(11)))
+        console.log(lockContract)
+
         setLoading(false);
     }
 
@@ -127,12 +159,35 @@ export default function check() {
     const purchase = async () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
         const signer = provider.getSigner();
+        const address = await signer.getAddress();
         const walletService = new WalletService(networks);
+        const password = "testing";
+        const encoded = ethers.utils.defaultAbiCoder.encode(
+            ['bytes32'],
+            [ethers.utils.id(password)]
+        )
 
+        const privateKey = ethers.utils.keccak256(encoded)
+        const privateKeyAccount = new ethers.Wallet(privateKey)
+        const _data = () => {
+            const messageHash = ethers.utils.solidityKeccak256(
+                ['string'],
+                [address.toLowerCase()]
+            )
+            const messageHashBinary = ethers.utils.arrayify(messageHash)
+            return privateKeyAccount.signMessage(messageHashBinary)
+        }
+        // await Promise.all(
+        //     users.map((address) => {
+
+        //     })
+        // )
+        const req = _data()
         await walletService.connect(provider, signer);
         const changeName = await walletService.purchaseKey(
             {
                 lockAddress: lockAddress,
+                data: req,
             },
             {}, // transaction options
             (error, hash) => {
@@ -194,7 +249,7 @@ export default function check() {
         if (balance == null) {
             checkBalance();
         }
-        
+
     }, [lockManager, member, balance, lockName]);
 
     const renderButton = () => {
@@ -265,6 +320,8 @@ export default function check() {
             return (
                 <div>
                     <h1>welcome to the experience</h1>
+                    <button className={styles.button} onClick={burn}>Burn Key</button>
+
                 </div>
             )
         }
@@ -290,12 +347,12 @@ export default function check() {
             </Head>
             <div className={styles.main}>
                 <div>
-                <div>
-                    <br></br>
-                    <h1 className={styles.title}>Lock Name: {lockName}</h1>
-                    <br></br>
-                </div>
-                    
+                    <div>
+                        <br></br>
+                        <h1 className={styles.title}>Lock Name: {lockName}</h1>
+                        <br></br>
+                    </div>
+
                     {renderButton()}
                 </div>
             </div>

@@ -81,6 +81,28 @@ export default function create() {
         );
         console.log(fee);
     }
+
+    const setPassword = async () => {
+        const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+        const walletService = new WalletService(networks);
+        const signer = provider.getSigner();
+        await walletService.connect(provider, signer);
+        // Connect to a provider with a wallet
+        // await walletService.connect(provider, signer);
+        // This only resolves when the transaction has been mined, but the callback returns the hash immediately
+        const pass = await walletService.setEventHooks(
+            {
+                lockAddress: "0x16CC1193c1E128558a02C4533901B1c0eEf7B021",
+                keyPurchase: "0xCa837900f7DaB40787b608b6738d1B730f1d2759",
+            },
+            {}, // transaction options
+            (error, hash) => {
+                // This is the hash of the transaction!
+                console.log({ hash });
+            }
+        );
+    }
+
     const connectWallet = async () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
         await provider.send('eth_requestAccounts', []);
@@ -100,6 +122,8 @@ export default function create() {
                     />
                     <button onClick={createLock} className={styles.button}>Create Lock</button>
                     <button onClick={setreferrer} className={styles.button}>Set Fee</button>
+                    <button onClick={setPassword} className={styles.button}>Set Password</button>
+
 
                 </div>
             )
