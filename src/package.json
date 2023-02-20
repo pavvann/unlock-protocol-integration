@@ -17,6 +17,5 @@
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@biconomy/mexa": "^3.0.5"
   }
 }
