@@ -5,6 +5,8 @@ import { WalletService, Web3Service } from '@unlock-protocol/unlock-js';
 import { ethers } from 'ethers';
 import Link from 'next/link';
 import { BigNumber } from "ethers";
+import { renderPaperCheckoutLink } from "@paperxyz/js-client-sdk"
+
 // import Biconomy from "@biconomy/mexa";
 
 
@@ -21,6 +23,7 @@ export default function check() {
         },
     };
 
+
     // enter lock address here
     const lockAddress = "0x16cc1193c1e128558a02c4533901b1c0eef7b021";
     const [lockManager, setIsLockManager] = useState(false);
@@ -32,6 +35,7 @@ export default function check() {
     const [lockName, setLockName] = useState("")
     const [keyRecipient, setKeyRecipient] = useState("")
     const [managerRecipient, setManagerRecipient] = useState("")
+    const [checkoutURL, setCheckoutURL] = useState("")
 
     const checkManagerOrMember = async () => {
         setLoading(true);
@@ -78,7 +82,8 @@ export default function check() {
         const lockContract = await web3Service.getLockContract(lockAddress, provider)
         console.log(Number(await lockContract.balanceOf("0xadba2f601378c3f3326f1c0d747d7e1e0a160724")))
         console.log(lockContract)
-
+        const uri = await web3Service.tokenURI(lockAddress, 1, 5)
+        console.log(uri);
         // const balance = await web3Service.getAddressBalance(lockAddress, 5);
         // console.log("balance = " + balance)
         // setBalance(balance);
@@ -219,6 +224,69 @@ export default function check() {
         console.log(giveKey_)
     }
 
+    const openCheckout = () => renderPaperCheckoutLink({
+        checkoutLinkUrl: checkoutURL,
+
+    });
+
+    const getCheckoutLink = async (contractID, price, apiKey) => {
+        try {
+            const options = {
+                method: "POST",
+                headers: {
+                    'accept': 'application/json',
+                    "Content-Type": "application/json",
+                    'Authorization': apiKey,
+                },
+                body: JSON.stringify({
+                    quantity: 1,
+                    metadata: {},
+                    expiresInMinutes: 30,
+                    // contractArgs: {
+                    //     tokenId: "12",
+                    // },
+                    contractId: contractID,
+                    title: "testing paper",
+                    // imageUrl: "https://ayirprah.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Friven.18bfe504.png&w=750&q=75",
+                    twitterHandleOverride: "papercheckout",
+                    mintMethod: {
+                        "name": "purchase",
+                        "args": {
+                            "_recipients": ["$WALLET"],
+                            // "quantity": "$QUANTITY"
+                            "_data": [],
+                            "_values": [],
+                            "_referrers": [],
+                            "_keyManagers": [],
+                        },
+                        "payment": {
+                            "value": price + " * $QUANTITY",
+                            "currency": "ETH"
+                        }
+                    },
+                    eligibilityMethod: {
+                        "name": "checkClaimEligibility",
+                        "args": {
+                            "quantity": "$QUANTITY"
+                        }
+                    }
+                }),
+            };
+
+            const response = await fetch(
+                "https://withpaper.com/api/2022-08-12/shareable-checkout-link",
+                options
+            );
+            const jsonResponse = await response.json();
+            console.log(jsonResponse.checkoutLinkIntentUrl)
+            setCheckoutURL(jsonResponse.checkoutLinkIntentUrl);
+        } catch (e) {
+            console.log("error with checkout link api", e);
+        }
+    };
+
+
+
     const newManager = async () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
         const signer = provider.getSigner();
@@ -248,6 +316,10 @@ export default function check() {
         }
         if (balance == null) {
             checkBalance();
+        }
+        // @jijin
+        if (!member) {
+            getCheckoutLink("9805c919-f90d-498a-9462-7de52ce8c990", "0.02", "enter api key");
         }
 
     }, [lockManager, member, balance, lockName]);
@@ -331,12 +403,18 @@ export default function check() {
                     <h1 className={styles.description}>You are not a member. Click below to get your Membership</h1> <br></br>
                     {/* Enter checkout url here */}
                     <button className={styles.button} onClick={purchase}>Become a Member</button>
+                    <button className={styles.button} onClick={openCheckout}>Buy with Paper</button>
+
                 </div>
             )
         }
 
 
     }
+
+
+
+
 
     return (
         <div>
